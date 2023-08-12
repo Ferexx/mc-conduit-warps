@@ -1,0 +1,4 @@
+name: WarpPlugin
+version: 0.0.1
+main: dev.ferex.warpPlugin.WarpPlugin
+api-version: 1.19
