@@ -1,8 +1,8 @@
-package dev.ferex.warpPlugin;
+package dev.ferex.conduitWarpPlugin;
 
 import org.bukkit.plugin.java.JavaPlugin;
 
-public class WarpPlugin extends JavaPlugin {
+public class ConduitWarpPlugin extends JavaPlugin {
     @Override
     public void onEnable() {
         getServer().getPluginManager().registerEvents(new InteractListener(), this);

@@ -1,4 +1,4 @@
-package dev.ferex.warpPlugin;
+package dev.ferex.conduitWarpPlugin;
 
 import org.bukkit.Bukkit;
 import org.bukkit.Material;
@@ -9,10 +9,10 @@ import org.bukkit.inventory.meta.ItemMeta;
 
 import java.util.Arrays;
 
-public class WarpGui implements Listener {
+public class ConduitWarpGui implements Listener {
     private final Inventory inv;
 
-    public WarpGui() {
+    public ConduitWarpGui() {
         inv = Bukkit.createInventory(null, 9, "Warps");
 
         initialiseItems();

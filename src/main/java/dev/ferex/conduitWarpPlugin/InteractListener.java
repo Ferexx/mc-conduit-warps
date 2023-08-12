@@ -1,4 +1,4 @@
-package dev.ferex.warpPlugin;
+package dev.ferex.conduitWarpPlugin;
 
 import org.bukkit.Bukkit;
 import org.bukkit.Location;
@@ -17,10 +17,8 @@ import org.bukkit.inventory.meta.ItemMeta;
 
 import java.util.Arrays;
 
-import static org.bukkit.Bukkit.getServer;
-
 public class InteractListener implements Listener {
-    private Inventory warpInventory;
+    private final Inventory warpInventory;
 
     public InteractListener() {
         warpInventory = Bukkit.createInventory(null, 9, "Warps");

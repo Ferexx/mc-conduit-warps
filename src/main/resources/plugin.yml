@@ -1,4 +1,4 @@
-name: WarpPlugin
+name: ConduitWarps
 version: 0.0.1
-main: dev.ferex.warpPlugin.WarpPlugin
+main: dev.ferex.conduitWarpPlugin.ConduitWarpPlugin
 api-version: 1.19
