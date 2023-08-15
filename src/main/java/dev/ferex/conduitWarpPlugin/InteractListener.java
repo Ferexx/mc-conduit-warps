@@ -11,6 +11,7 @@ import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
 import org.bukkit.event.block.Action;
 import org.bukkit.event.inventory.InventoryClickEvent;
+import org.bukkit.event.inventory.InventoryCloseEvent;
 import org.bukkit.event.inventory.InventoryType;
 import org.bukkit.event.player.PlayerInteractEvent;
 import org.bukkit.inventory.Inventory;
@@ -21,25 +22,34 @@ import org.bukkit.inventory.meta.ItemMeta;
 import java.sql.Connection;
 import java.sql.ResultSet;
 import java.sql.SQLException;
-import java.util.Arrays;
+import java.util.*;
+
+import static dev.ferex.conduitWarpPlugin.ConduitWarpPlugin.WARP_COST_PATH;
 
 public class InteractListener implements Listener {
-    private final Inventory warpInventory;
+    public static final List<Warp> existingWarps = new ArrayList<>();
+    private final Map<String, Inventory> openInventories = new HashMap<>();
+    private final Map<String, Integer> pageNumbers = new HashMap<>();
     private final Connection dbConnection;
-    private final FileConfiguration config;
+    private final int WARP_COST;
 
     public InteractListener(final Connection dbConnection, final FileConfiguration config) {
-        this.warpInventory = Bukkit.createInventory(null, 9, "Warps");
         this.dbConnection = dbConnection;
-        this.config = config;
+        this.WARP_COST = config.getInt(WARP_COST_PATH);
 
         initialiseWarps();
     }
 
     private void initialiseWarps() {
-        warpInventory.addItem(createWarpItem(Material.CONDUIT, "Previous Page"));
-        // warps
-        warpInventory.addItem(createWarpItem(Material.CONDUIT, "Next Page"));
+        try {
+            final ResultSet warpsFromDb = (dbConnection.prepareStatement("SELECT * FROM warps")).executeQuery();
+            while (warpsFromDb.next()) {
+                if (warpsFromDb.isClosed()) break;
+                existingWarps.add(new Warp(warpsFromDb.getString(1), Material.valueOf(warpsFromDb.getString(2)), warpsFromDb.getInt(3), warpsFromDb.getInt(4), warpsFromDb.getInt(5)));
+            }
+        } catch (SQLException e) {
+            throw new RuntimeException(e);
+        }
     }
 
     private ItemStack createWarpItem(final Material material, final String name, final String... lore) {
@@ -52,6 +62,10 @@ public class InteractListener implements Listener {
         return item;
     }
 
+    private ItemStack createWarpItem(final Warp warp) {
+        return createWarpItem(warp.material, warp.name);
+    }
+
     @EventHandler
     public void onPlayerInteract(PlayerInteractEvent event) {
         if (event.getAction() == Action.RIGHT_CLICK_BLOCK
@@ -60,7 +74,16 @@ public class InteractListener implements Listener {
                 event.getPlayer().openInventory(new InventoryView() {
                     @Override
                     public Inventory getTopInventory() {
-                        return warpInventory;
+                        final Inventory inventory = Bukkit.createInventory(null, 9, "Warps");
+                        inventory.addItem(createWarpItem(Material.CONDUIT, "Previous Page"));
+                        final int pageNumber = pageNumbers.computeIfAbsent(event.getPlayer().getName(), number -> 0);
+                        final int startNumber = pageNumber * 7;
+                        for (int i = startNumber; i <= startNumber + 6; i++) {
+                            inventory.addItem(createWarpItem(existingWarps.get(i)));
+                        }
+                        inventory.addItem(createWarpItem(Material.CONDUIT, "Next Page"));
+                        openInventories.put(event.getPlayer().getName(), inventory);
+                        return inventory;
                     }
 
                     @Override
@@ -89,15 +112,31 @@ public class InteractListener implements Listener {
 
     @EventHandler
     public void onInventoryClick(final InventoryClickEvent event) {
-        if (!event.getInventory().equals(warpInventory)) return;
+        final Player player = (Player) event.getWhoClicked();
+        if (!event.getInventory().equals(openInventories.get(player.getName()))) return;
         event.setCancelled(true);
 
         final ItemStack clickedItem = event.getCurrentItem();
         if (clickedItem == null || clickedItem.getType().isAir()) return;
 
-        final Player player = (Player) event.getWhoClicked();
-        if (clickedItem.getType() == Material.DIAMOND_SWORD) {
-            player.teleport(new Location(player.getWorld(), 307, 84, 123));
+        if (Objects.requireNonNull(clickedItem.getItemMeta()).hasDisplayName()) {
+            if (clickedItem.getItemMeta().getDisplayName().equals("Previous Page")) {
+                // previous page
+            }
+            if (clickedItem.getItemMeta().getDisplayName().equals("Next Page")) {
+                // next page
+            }
+            final Warp toWarp = existingWarps.stream().filter(warp -> warp.name.equals(clickedItem.getItemMeta().getDisplayName())).findFirst().get();
+            player.teleport(new Location(player.getWorld(), toWarp.x + 0.5, toWarp.y + 1, toWarp.z + 0.5));
+        }
+    }
+
+    @EventHandler
+    public void onInventoryClose(final InventoryCloseEvent event) {
+        final Player player = (Player) event.getPlayer();
+        if (openInventories.containsKey(player.getName())) {
+            openInventories.remove(player.getName());
+            pageNumbers.remove(player.getName());
         }
     }
 

@@ -23,12 +23,14 @@ public class NewWarpCommand implements CommandExecutor, TabExecutor {
 
     public NewWarpCommand(final Connection dbConnection, final FileConfiguration config) {
         this.dbConnection = dbConnection;
-        this.NEW_WARP_COST = config.getInt(ConduitWarpPlugin.NEW_WARP_COST);
+        this.NEW_WARP_COST = config.getInt(ConduitWarpPlugin.NEW_WARP_COST_PATH);
     }
     @Override
     public boolean onCommand(CommandSender commandSender, Command command, String s, String[] strings) {
         if (!(commandSender instanceof Player)) return false;
         final Player player = (Player) commandSender;
+
+        if (strings.length != 2) return false;
 
         try {
             Material.valueOf(strings[1]);
@@ -43,7 +45,10 @@ public class NewWarpCommand implements CommandExecutor, TabExecutor {
                 try {
                     (dbConnection.prepareStatement("INSERT INTO warps VALUES ('" + strings[0] + "','" + strings[1] + "'," + targetedBlock.getLocation().getBlockX() + "," + targetedBlock.getLocation().getBlockY() + "," + targetedBlock.getLocation().getBlockZ() + ")")).executeUpdate();
                 } catch (SQLException e) {
-                    throw new RuntimeException(e);
+                    if (e.getErrorCode() == 19) {
+                        player.sendMessage("Warp name must be unique");
+                    }
+                    return false;
                 }
                 getEconomy().withdrawPlayer(player, NEW_WARP_COST);
                 player.sendMessage("Warp added.");
@@ -60,7 +65,7 @@ public class NewWarpCommand implements CommandExecutor, TabExecutor {
     @Override
     public List<String> onTabComplete(CommandSender commandSender, Command command, String s, String[] strings) {
         if (strings.length == 2) {
-            return Arrays.stream(Material.values()).map(Enum::name).filter(name -> name.startsWith(strings[1])).collect(Collectors.toList());
+            return Arrays.stream(Material.values()).map(Enum::name).filter(name -> name.contains(strings[1].toUpperCase())).collect(Collectors.toList());
         }
         return null;
     }

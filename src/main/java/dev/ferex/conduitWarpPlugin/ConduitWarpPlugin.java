@@ -10,13 +10,13 @@ import java.io.IOException;
 import java.sql.Connection;
 import java.sql.DriverManager;
 import java.sql.SQLException;
-import java.util.ArrayList;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
 public class ConduitWarpPlugin extends JavaPlugin {
-    public static final String WARPS_LIST = "warps";
-    public static final String NEW_WARP_COST = "newWarpCost";
+    public static final String WARPS_LIST_PATH = "warps";
+    public static final String NEW_WARP_COST_PATH = "newWarpCost";
+    public static final String WARP_COST_PATH = "warpCost";
     private static Economy economy = null;
     private static final Logger logger = Logger.getLogger("Minecraft");
     private Connection dbConnection = null;
@@ -28,7 +28,7 @@ public class ConduitWarpPlugin extends JavaPlugin {
             File sqliteFile = new File(getDataFolder(), "db.db");
             sqliteFile.createNewFile();
             dbConnection = DriverManager.getConnection("jdbc:sqlite:" + sqliteFile);
-            (dbConnection.prepareStatement("CREATE TABLE IF NOT EXISTS warps(Name varchar(64),Item varchar(64),X Integer, Y Integer, Z Integer)")).executeUpdate();
+            (dbConnection.prepareStatement("CREATE TABLE IF NOT EXISTS warps(Name varchar(64),Item varchar(64),X Integer, Y Integer, Z Integer, PRIMARY KEY(Name))")).executeUpdate();
         } catch (SQLException | IOException e) {
             throw new RuntimeException(e);
         }
@@ -37,7 +37,8 @@ public class ConduitWarpPlugin extends JavaPlugin {
 
         this.getCommand("addWarp").setExecutor(new NewWarpCommand(dbConnection, config));
 
-        config.addDefault(NEW_WARP_COST, 1_000_000);
+        config.addDefault(NEW_WARP_COST_PATH, 1_000_000);
+        config.addDefault(WARP_COST_PATH, 1_000);
         config.options().copyDefaults(true);
         saveConfig();
 
@@ -52,7 +53,7 @@ public class ConduitWarpPlugin extends JavaPlugin {
         }
         economy = rsp.getProvider();
 
-        logger.log(Level.ALL, String.format("[%s] Loaded %d warps", getDescription().getName(), config.getList(WARPS_LIST).size()));
+        logger.log(Level.ALL, String.format("[%s] Loaded %d warps", getDescription().getName(), config.getList(WARPS_LIST_PATH).size()));
     }
 
     @Override
