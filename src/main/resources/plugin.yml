@@ -2,3 +2,9 @@ name: ConduitWarps
 version: 0.0.1
 main: dev.ferex.conduitWarpPlugin.ConduitWarpPlugin
 api-version: 1.19
+
+commands:
+  addWarp:
+    description: Add a new warp. You must be looking at a Conduit to use this command.
+    usage: /addWarp <name> <item>
+    permission: conduitWarps.addWarp
