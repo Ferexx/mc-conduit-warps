@@ -25,6 +25,7 @@ import java.sql.SQLException;
 import java.util.*;
 
 import static dev.ferex.conduitWarpPlugin.ConduitWarpPlugin.WARP_COST_PATH;
+import static dev.ferex.conduitWarpPlugin.ConduitWarpPlugin.getEconomy;
 
 public class InteractListener implements Listener {
     public static final List<Warp> existingWarps = new ArrayList<>();
@@ -71,41 +72,10 @@ public class InteractListener implements Listener {
         if (event.getAction() == Action.RIGHT_CLICK_BLOCK
                 && event.getClickedBlock().getBlockData().getMaterial() == Material.CONDUIT) {
             if (isRegisteredConduit(event.getClickedBlock())) {
-                event.getPlayer().openInventory(new InventoryView() {
-                    @Override
-                    public Inventory getTopInventory() {
-                        final Inventory inventory = Bukkit.createInventory(null, 9, "Warps");
-                        inventory.addItem(createWarpItem(Material.CONDUIT, "Previous Page"));
-                        final int pageNumber = pageNumbers.computeIfAbsent(event.getPlayer().getName(), number -> 0);
-                        final int startNumber = pageNumber * 7;
-                        for (int i = startNumber; i <= startNumber + 6; i++) {
-                            inventory.addItem(createWarpItem(existingWarps.get(i)));
-                        }
-                        inventory.addItem(createWarpItem(Material.CONDUIT, "Next Page"));
-                        openInventories.put(event.getPlayer().getName(), inventory);
-                        return inventory;
-                    }
-
-                    @Override
-                    public Inventory getBottomInventory() {
-                        return event.getPlayer().getInventory();
-                    }
-
-                    @Override
-                    public HumanEntity getPlayer() {
-                        return event.getPlayer();
-                    }
-
-                    @Override
-                    public InventoryType getType() {
-                        return InventoryType.CHEST;
-                    }
-
-                    @Override
-                    public String getTitle() {
-                        return "Warps";
-                    }
-                });
+                final Inventory inventory = Bukkit.createInventory(null, 9, "Warps");
+                pageNumbers.put(event.getPlayer().getName(), 0);
+                openInventories.put(event.getPlayer().getName(), inventory);
+                showWarpInventory(event.getPlayer(), inventory);
             }
         }
     }
@@ -121,38 +91,73 @@ public class InteractListener implements Listener {
 
         if (Objects.requireNonNull(clickedItem.getItemMeta()).hasDisplayName()) {
             if (clickedItem.getItemMeta().getDisplayName().equals("Previous Page")) {
-                // previous page
+                pageNumbers.put(player.getName(), pageNumbers.get(player.getName()) - 1);
+                showWarpInventory(player, event.getClickedInventory());
+            } else if (clickedItem.getItemMeta().getDisplayName().equals("Next Page")) {
+                pageNumbers.put(player.getName(), pageNumbers.get(player.getName()) + 1);
+                showWarpInventory(player, event.getClickedInventory());
+            } else {
+                if (getEconomy().has(player, WARP_COST)) {
+                    final Warp toWarp = existingWarps.stream().filter(warp -> warp.name.equals(clickedItem.getItemMeta().getDisplayName())).findFirst().get();
+                    player.teleport(new Location(player.getWorld(), toWarp.x + 0.5, toWarp.y + 1, toWarp.z + 0.5));
+                    getEconomy().withdrawPlayer(player, WARP_COST);
+                } else {
+                    player.sendMessage("You need $" + WARP_COST + " to warp.");
+                }
             }
-            if (clickedItem.getItemMeta().getDisplayName().equals("Next Page")) {
-                // next page
-            }
-            final Warp toWarp = existingWarps.stream().filter(warp -> warp.name.equals(clickedItem.getItemMeta().getDisplayName())).findFirst().get();
-            player.teleport(new Location(player.getWorld(), toWarp.x + 0.5, toWarp.y + 1, toWarp.z + 0.5));
         }
     }
 
-    @EventHandler
-    public void onInventoryClose(final InventoryCloseEvent event) {
-        final Player player = (Player) event.getPlayer();
-        if (openInventories.containsKey(player.getName())) {
-            openInventories.remove(player.getName());
-            pageNumbers.remove(player.getName());
-        }
+    private void showWarpInventory(final Player player, final Inventory warpInventory) {
+        populateInventory(warpInventory, player.getName());
+        player.openInventory(new InventoryView() {
+            @Override
+            public Inventory getTopInventory() {
+                return warpInventory;
+            }
+
+            @Override
+            public Inventory getBottomInventory() {
+                return player.getInventory();
+            }
+
+            @Override
+            public HumanEntity getPlayer() {
+                return player;
+            }
+
+            @Override
+            public InventoryType getType() {
+                return InventoryType.CHEST;
+            }
+
+            @Override
+            public String getTitle() {
+                return "Warps";
+            }
+        });
     }
 
     private boolean isRegisteredConduit(Block block) {
-        try {
-            final ResultSet warps = (dbConnection.prepareStatement("SELECT * FROM warps")).executeQuery();
-            do {
-                if (warps.getInt(3) == block.getLocation().getBlockX()
-                    && warps.getInt(4) == block.getLocation().getBlockY()
-                    && warps.getInt(5) == block.getLocation().getBlockZ()) {
-                    return true;
-                }
-            } while (warps.next());
-        } catch (SQLException e) {
-            e.printStackTrace();
+        return existingWarps.stream().anyMatch(warp -> warp.x == block.getX() && warp.y == block.getY() && warp.z == block.getZ());
+    }
+
+    private void populateInventory(final Inventory inventory, final String playerName) {
+        inventory.clear();
+        int currentSlot = 0;
+        final int pageNumber = pageNumbers.get(playerName);
+        int startNumber = pageNumber * 7;
+        if (pageNumber > 0) {
+            inventory.addItem(createWarpItem(Material.CONDUIT, "Previous Page"));
+            currentSlot++;
         }
-        return false;
+        while (currentSlot++ < 8 && startNumber < existingWarps.size()) {
+            inventory.addItem(createWarpItem(existingWarps.get(startNumber++)));
+        }
+        if (startNumber == existingWarps.size() - 1) {
+            inventory.addItem(createWarpItem(existingWarps.get(startNumber)));
+        } else if (startNumber != existingWarps.size()) {
+            inventory.addItem(createWarpItem(Material.CONDUIT, "Next Page"));
+        }
     }
 }

@@ -16,6 +16,7 @@ import java.util.List;
 import java.util.stream.Collectors;
 
 import static dev.ferex.conduitWarpPlugin.ConduitWarpPlugin.getEconomy;
+import static dev.ferex.conduitWarpPlugin.InteractListener.existingWarps;
 
 public class NewWarpCommand implements CommandExecutor, TabExecutor {
     private final Connection dbConnection;
@@ -50,6 +51,7 @@ public class NewWarpCommand implements CommandExecutor, TabExecutor {
                     }
                     return false;
                 }
+                existingWarps.add(new Warp(strings[0], Material.valueOf(strings[1]), targetedBlock.getLocation()));
                 getEconomy().withdrawPlayer(player, NEW_WARP_COST);
                 player.sendMessage("Warp added.");
                 return true;

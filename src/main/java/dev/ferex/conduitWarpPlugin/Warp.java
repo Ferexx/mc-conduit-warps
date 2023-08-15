@@ -1,5 +1,6 @@
 package dev.ferex.conduitWarpPlugin;
 
+import org.bukkit.Location;
 import org.bukkit.Material;
 
 public class Warp {
@@ -15,5 +16,9 @@ public class Warp {
         this.x = x;
         this.y = y;
         this.z = z;
+    }
+
+    public Warp(final String name, final Material material, final Location location) {
+        this(name, material, location.getBlockX(), location.getBlockY(), location.getBlockZ());
     }
 }
