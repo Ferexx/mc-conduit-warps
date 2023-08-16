@@ -23,6 +23,7 @@ public class ConduitWarpPlugin extends JavaPlugin {
     public static final String WARPS_LIST_PATH = "warps";
     public static final String NEW_WARP_COST_PATH = "newWarpCost";
     public static final String WARP_COST_PATH = "warpCost";
+    public static final String WARP_MESSAGE_PREFIX = "[&aWarps&f]";
 
     public static final List<Warp> existingWarps = new ArrayList<>();
     private static Economy economy = null;

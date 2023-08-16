@@ -2,8 +2,6 @@ package dev.ferex.conduitWarpPlugin;
 
 import org.bukkit.Bukkit;
 import org.bukkit.Material;
-import org.bukkit.World;
-import org.bukkit.configuration.file.FileConfiguration;
 import org.bukkit.entity.HumanEntity;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
@@ -16,9 +14,6 @@ import org.bukkit.inventory.InventoryView;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.ItemMeta;
 
-import java.sql.Connection;
-import java.sql.ResultSet;
-import java.sql.SQLException;
 import java.util.*;
 
 import static dev.ferex.conduitWarpPlugin.ConduitWarpPlugin.*;
@@ -67,11 +62,13 @@ public class InteractListener extends ConduitListener {
             if (getEconomy().has(player, WARP_COST)) {
                 final Warp toWarp = getWarpFromName(clickedItemName);
                 if (toWarp != null) {
-                    player.teleport(toWarp.location);
+                    player.teleport(toWarp.location.clone().add(0.5, 1, 0.5));
                     getEconomy().withdrawPlayer(player, WARP_COST);
+                    player.sendMessage(String.format("%s Warped to %s. $%d has been taken from your account",
+                            WARP_MESSAGE_PREFIX, toWarp.name, WARP_COST));
                 }
             } else {
-                player.sendMessage("You need $" + WARP_COST + " to warp.");
+                player.sendMessage(String.format("%s You need $%d to warp.", WARP_MESSAGE_PREFIX, WARP_COST));
             }
         }
     }

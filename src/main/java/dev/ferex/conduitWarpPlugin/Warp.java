@@ -10,12 +10,12 @@ public class Warp {
     public final Location location;
 
     public Warp(final String name, final Material material, final World world, final int x, final int y, final int z) {
-        this(name, material, new Location(world, x + 0.5, y + 1, z + 0.5));
+        this(name, material, new Location(world, x, y, z));
     }
 
     public Warp(final String name, final Material material, final Location location) {
         this.name = name;
         this.material = material;
-        this.location = location.add(0.5, 1, 0.5);
+        this.location = location;
     }
 }

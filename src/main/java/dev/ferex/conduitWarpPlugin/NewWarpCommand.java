@@ -15,8 +15,7 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.stream.Collectors;
 
-import static dev.ferex.conduitWarpPlugin.ConduitWarpPlugin.getEconomy;
-import static dev.ferex.conduitWarpPlugin.ConduitWarpPlugin.existingWarps;
+import static dev.ferex.conduitWarpPlugin.ConduitWarpPlugin.*;
 
 public class NewWarpCommand implements CommandExecutor, TabExecutor {
     private final Connection dbConnection;
@@ -36,7 +35,7 @@ public class NewWarpCommand implements CommandExecutor, TabExecutor {
         try {
             Material.valueOf(strings[1]);
         } catch (IllegalArgumentException e) {
-            player.sendMessage("Make sure you have entered a valid item");
+            player.sendMessage(String.format("%s Make sure you have entered a valid item", WARP_MESSAGE_PREFIX));
             return false;
         }
 
@@ -47,19 +46,19 @@ public class NewWarpCommand implements CommandExecutor, TabExecutor {
                     (dbConnection.prepareStatement("INSERT INTO warps VALUES ('" + strings[0] + "','" + strings[1] + "','" + targetedBlock.getWorld().getName() + "'," + targetedBlock.getLocation().getBlockX() + "," + targetedBlock.getLocation().getBlockY() + "," + targetedBlock.getLocation().getBlockZ() + ")")).executeUpdate();
                 } catch (SQLException e) {
                     if (e.getErrorCode() == 19) {
-                        player.sendMessage("Warp name must be unique");
+                        player.sendMessage(String.format("%s Warp name must be unique", WARP_MESSAGE_PREFIX));
                     }
                     return false;
                 }
                 existingWarps.add(new Warp(strings[0], Material.valueOf(strings[1]), targetedBlock.getLocation()));
                 getEconomy().withdrawPlayer(player, NEW_WARP_COST);
-                player.sendMessage("Warp added.");
+                player.sendMessage(String.format("%s Warp added.", WARP_MESSAGE_PREFIX));
                 return true;
             } else {
-                player.sendMessage("You need $" + NEW_WARP_COST + " to add a warp.");
+                player.sendMessage(String.format("%s You need $%d to add a warp.", WARP_MESSAGE_PREFIX, NEW_WARP_COST));
             }
         } else {
-            player.sendMessage("Please make sure you are looking at a Conduit before running this command.");
+            player.sendMessage(String.format("%s Please make sure you are looking at a Conduit before running this command.", WARP_MESSAGE_PREFIX));
         }
         return false;
     }
