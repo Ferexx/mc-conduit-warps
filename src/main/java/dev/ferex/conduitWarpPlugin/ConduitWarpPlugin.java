@@ -1,10 +1,14 @@
 package dev.ferex.conduitWarpPlugin;
 
+import net.md_5.bungee.api.ChatColor;
+import net.md_5.bungee.api.chat.BaseComponent;
+import net.md_5.bungee.api.chat.ComponentBuilder;
 import net.milkbowl.vault.economy.Economy;
 import org.bukkit.Bukkit;
 import org.bukkit.Material;
 import org.bukkit.World;
 import org.bukkit.configuration.file.FileConfiguration;
+import org.bukkit.entity.Player;
 import org.bukkit.plugin.RegisteredServiceProvider;
 import org.bukkit.plugin.java.JavaPlugin;
 
@@ -23,7 +27,6 @@ public class ConduitWarpPlugin extends JavaPlugin {
     public static final String WARPS_LIST_PATH = "warps";
     public static final String NEW_WARP_COST_PATH = "newWarpCost";
     public static final String WARP_COST_PATH = "warpCost";
-    public static final String WARP_MESSAGE_PREFIX = "[&aWarps&f]";
 
     public static final List<Warp> existingWarps = new ArrayList<>();
     private static Economy economy = null;
@@ -101,5 +104,9 @@ public class ConduitWarpPlugin extends JavaPlugin {
 
     public static Economy getEconomy() {
         return economy;
+    }
+
+    public static void sendMessage(final Player player, final String message) {
+        player.spigot().sendMessage(new ComponentBuilder("[" + ChatColor.GREEN + "Warps" + ChatColor.RESET + "] " + message).create());
     }
 }

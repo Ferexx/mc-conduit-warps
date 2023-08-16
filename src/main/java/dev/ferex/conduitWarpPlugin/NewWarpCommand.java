@@ -35,7 +35,7 @@ public class NewWarpCommand implements CommandExecutor, TabExecutor {
         try {
             Material.valueOf(strings[1]);
         } catch (IllegalArgumentException e) {
-            player.sendMessage(String.format("%s Make sure you have entered a valid item", WARP_MESSAGE_PREFIX));
+            sendMessage(player, "Make sure you have entered a valid item");
             return false;
         }
 
@@ -46,19 +46,19 @@ public class NewWarpCommand implements CommandExecutor, TabExecutor {
                     (dbConnection.prepareStatement("INSERT INTO warps VALUES ('" + strings[0] + "','" + strings[1] + "','" + targetedBlock.getWorld().getName() + "'," + targetedBlock.getLocation().getBlockX() + "," + targetedBlock.getLocation().getBlockY() + "," + targetedBlock.getLocation().getBlockZ() + ")")).executeUpdate();
                 } catch (SQLException e) {
                     if (e.getErrorCode() == 19) {
-                        player.sendMessage(String.format("%s Warp name must be unique", WARP_MESSAGE_PREFIX));
+                        sendMessage(player, "Warp name must be unique");
                     }
                     return false;
                 }
                 existingWarps.add(new Warp(strings[0], Material.valueOf(strings[1]), targetedBlock.getLocation()));
                 getEconomy().withdrawPlayer(player, NEW_WARP_COST);
-                player.sendMessage(String.format("%s Warp added.", WARP_MESSAGE_PREFIX));
+                sendMessage(player, "Warp added.");
                 return true;
             } else {
-                player.sendMessage(String.format("%s You need $%d to add a warp.", WARP_MESSAGE_PREFIX, NEW_WARP_COST));
+                sendMessage(player, String.format("You need $%d to add a warp.", NEW_WARP_COST));
             }
         } else {
-            player.sendMessage(String.format("%s Please make sure you are looking at a Conduit before running this command.", WARP_MESSAGE_PREFIX));
+            sendMessage(player, "Please make sure you are looking at a Conduit before running this command.");
         }
         return false;
     }

@@ -64,11 +64,11 @@ public class InteractListener extends ConduitListener {
                 if (toWarp != null) {
                     player.teleport(toWarp.location.clone().add(0.5, 1, 0.5));
                     getEconomy().withdrawPlayer(player, WARP_COST);
-                    player.sendMessage(String.format("%s Warped to %s. $%d has been taken from your account",
-                            WARP_MESSAGE_PREFIX, toWarp.name, WARP_COST));
+                    sendMessage(player, String.format("Warped to %s. $%d has been taken from your account",
+                            toWarp.name, WARP_COST));
                 }
             } else {
-                player.sendMessage(String.format("%s You need $%d to warp.", WARP_MESSAGE_PREFIX, WARP_COST));
+                sendMessage(player, String.format("You need $%d to warp.", WARP_COST));
             }
         }
     }
