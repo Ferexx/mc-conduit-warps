@@ -16,7 +16,7 @@ import java.util.List;
 import java.util.stream.Collectors;
 
 import static dev.ferex.conduitWarpPlugin.ConduitWarpPlugin.getEconomy;
-import static dev.ferex.conduitWarpPlugin.InteractListener.existingWarps;
+import static dev.ferex.conduitWarpPlugin.ConduitWarpPlugin.existingWarps;
 
 public class NewWarpCommand implements CommandExecutor, TabExecutor {
     private final Connection dbConnection;
@@ -44,7 +44,7 @@ public class NewWarpCommand implements CommandExecutor, TabExecutor {
         if (targetedBlock.getType() == Material.CONDUIT) {
             if (getEconomy().has(player, NEW_WARP_COST)) {
                 try {
-                    (dbConnection.prepareStatement("INSERT INTO warps VALUES ('" + strings[0] + "','" + strings[1] + "'," + targetedBlock.getLocation().getBlockX() + "," + targetedBlock.getLocation().getBlockY() + "," + targetedBlock.getLocation().getBlockZ() + ")")).executeUpdate();
+                    (dbConnection.prepareStatement("INSERT INTO warps VALUES ('" + strings[0] + "','" + strings[1] + "','" + targetedBlock.getWorld().getName() + "'," + targetedBlock.getLocation().getBlockX() + "," + targetedBlock.getLocation().getBlockY() + "," + targetedBlock.getLocation().getBlockZ() + ")")).executeUpdate();
                 } catch (SQLException e) {
                     if (e.getErrorCode() == 19) {
                         player.sendMessage("Warp name must be unique");
