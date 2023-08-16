@@ -2,6 +2,7 @@ package dev.ferex.conduitWarpPlugin;
 
 import org.bukkit.Bukkit;
 import org.bukkit.Material;
+import org.bukkit.Sound;
 import org.bukkit.entity.HumanEntity;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
@@ -63,6 +64,7 @@ public class InteractListener extends ConduitListener {
                 final Warp toWarp = getWarpFromName(clickedItemName);
                 if (toWarp != null) {
                     player.teleport(toWarp.location.clone().add(0.5, 1, 0.5));
+                    player.playSound(player, Sound.ENTITY_CHICKEN_EGG, 1, 1);
                     getEconomy().withdrawPlayer(player, WARP_COST);
                     sendMessage(player, String.format("Warped to %s. $%d has been taken from your account",
                             toWarp.name, WARP_COST));

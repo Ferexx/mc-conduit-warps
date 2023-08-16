@@ -1,6 +1,8 @@
 package dev.ferex.conduitWarpPlugin;
 
 import org.bukkit.Material;
+import org.bukkit.Particle;
+import org.bukkit.Sound;
 import org.bukkit.block.Block;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandExecutor;
@@ -53,6 +55,8 @@ public class NewWarpCommand implements CommandExecutor, TabExecutor {
                 existingWarps.add(new Warp(strings[0], Material.valueOf(strings[1]), targetedBlock.getLocation()));
                 getEconomy().withdrawPlayer(player, NEW_WARP_COST);
                 sendMessage(player, "Warp added.");
+                player.getWorld().spawnParticle(Particle.CRIT, targetedBlock.getLocation().clone().add(0.5, 0.5, 0.5), 50);
+                player.playSound(targetedBlock.getLocation(), Sound.ENTITY_PLAYER_LEVELUP, 1, 1);
                 return true;
             } else {
                 sendMessage(player, String.format("You need $%d to add a warp.", NEW_WARP_COST));
