@@ -32,7 +32,6 @@ public class InteractListener extends ConduitListener {
     public void onPlayerInteract(PlayerInteractEvent event) {
         if (event.getAction() == Action.RIGHT_CLICK_BLOCK
                 && event.getClickedBlock().getBlockData().getMaterial() == Material.CONDUIT) {
-            event.setCancelled(true);
             if (isRegisteredConduit(event.getClickedBlock())) {
                 final Inventory inventory = Bukkit.createInventory(null, 9, "Warps");
 
